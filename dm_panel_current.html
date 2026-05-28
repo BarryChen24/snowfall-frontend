@@ -1,0 +1,695 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-store" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <title>覆雪之下 DM 控制台 v20260526-6</title>
+  <style>
+    :root {
+      --bg: #0b1120;
+      --panel: #111a2e;
+      --card: #162238;
+      --border: #27466f;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --blue: #3b82f6;
+      --green: #22c55e;
+      --yellow: #f59e0b;
+      --red: #ef4444;
+      color-scheme: dark;
+      font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(59,130,246,.20), transparent 32rem),
+        linear-gradient(145deg, #06101f, var(--bg));
+    }
+    button, input, select {
+      font: inherit;
+    }
+    button {
+      min-height: 38px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #17243d;
+      color: var(--text);
+      padding: 0 13px;
+      cursor: pointer;
+    }
+    button:hover { border-color: #60a5fa; }
+    button.primary {
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      border-color: #60a5fa;
+      color: white;
+      font-weight: 700;
+    }
+    input, select {
+      width: 100%;
+      min-height: 38px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #0f172a;
+      color: var(--text);
+      padding: 8px 10px;
+    }
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .login {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 22px;
+    }
+    .login-card {
+      width: min(460px, 100%);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(17, 26, 46, .94);
+      padding: 22px;
+      box-shadow: 0 24px 80px rgba(0,0,0,.35);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      display: grid;
+      place-items: center;
+      background: #020617;
+      font-size: 24px;
+    }
+    h1, h2, h3 { margin: 0; letter-spacing: 0; }
+    h1 { font-size: 22px; }
+    h2 { font-size: 18px; margin-bottom: 12px; }
+    h3 { font-size: 15px; margin-bottom: 8px; }
+    .sub, .muted { color: var(--muted); }
+    .small { font-size: 12px; }
+    .stack { display: grid; gap: 12px; }
+    .message {
+      display: none;
+      border: 1px solid rgba(239,68,68,.55);
+      border-radius: 8px;
+      background: rgba(239,68,68,.12);
+      color: #fecaca;
+      padding: 10px;
+      white-space: pre-wrap;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .message.show { display: block; }
+    .debug {
+      border: 1px solid rgba(96,165,250,.35);
+      border-radius: 8px;
+      background: rgba(15,23,42,.88);
+      color: #bfdbfe;
+      padding: 10px;
+      font: 12px/1.55 Consolas, ui-monospace, monospace;
+      white-space: pre-wrap;
+      max-height: 170px;
+      overflow: auto;
+    }
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 230px minmax(0,1fr);
+    }
+    .side {
+      border-right: 1px solid var(--border);
+      background: rgba(7, 16, 31, .72);
+      padding: 18px 14px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+    .nav {
+      display: grid;
+      gap: 8px;
+    }
+    .nav button {
+      text-align: left;
+      background: transparent;
+      color: var(--muted);
+    }
+    .nav button.active {
+      background: rgba(59,130,246,.18);
+      border-color: #60a5fa;
+      color: var(--text);
+    }
+    .main { padding: 20px; min-width: 0; }
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .tabs-mobile {
+      display: none;
+      gap: 8px;
+      overflow-x: auto;
+      margin-top: 12px;
+    }
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: rgba(22, 34, 56, .88);
+      padding: 14px;
+    }
+    .grid { display: grid; gap: 14px; }
+    .cols2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .cols3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    .metric { font-size: 30px; font-weight: 800; }
+    .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid rgba(148,163,184,.28);
+      border-radius: 999px;
+      padding: 4px 8px;
+      color: var(--muted);
+      font-size: 12px;
+      margin: 0 5px 5px 0;
+    }
+    .pill.ok { color: #bbf7d0; border-color: rgba(34,197,94,.45); }
+    .pill.warn { color: #fde68a; border-color: rgba(245,158,11,.45); }
+    .table-wrap { overflow: auto; border: 1px solid rgba(148,163,184,.22); border-radius: 8px; }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; }
+    th, td { padding: 10px; border-bottom: 1px solid rgba(148,163,184,.22); text-align: left; vertical-align: top; }
+    th { color: var(--muted); font-size: 12px; background: rgba(15,23,42,.72); }
+    pre { margin: 0; white-space: pre-wrap; color: var(--muted); font: 12px/1.5 Consolas, ui-monospace, monospace; }
+    @media (max-width: 820px) {
+      .app { display: block; }
+      .side { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--border); }
+      .nav { display: none; }
+      .tabs-mobile { display: flex; }
+      .main { padding: 14px; }
+      .top { flex-direction: column; }
+      .cols2, .cols3 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <section id="loginView" class="login">
+    <div class="login-card stack">
+      <div class="brand">
+        <div class="mark">☯</div>
+        <div>
+          <h1>覆雪之下 DM 控制台</h1>
+          <div class="sub small">版本：v20260526-6 · 永不落幕的梦</div>
+        </div>
+      </div>
+      <label>账号<input id="username" value="dm" autocomplete="username" /></label>
+      <label>密码<input id="password" value="dm" type="password" autocomplete="current-password" /></label>
+      <button id="loginBtn" type="button" class="primary">进入后台</button>
+      <div id="loginError" class="message"></div>
+      <div id="loginDebug" class="debug">等待登录...</div>
+    </div>
+  </section>
+
+  <section id="appView" class="app" hidden>
+    <aside class="side">
+      <div class="brand">
+        <div class="mark">☯</div>
+        <div>
+          <h1>覆雪之下</h1>
+          <div class="sub small">DM 控制台 v20260526-6</div>
+        </div>
+      </div>
+      <nav id="nav" class="nav"></nav>
+      <div id="mobileNav" class="tabs-mobile"></div>
+      <div class="sub small" style="margin-top:18px" id="operator">未登录</div>
+    </aside>
+
+    <main class="main">
+      <div class="top">
+        <div>
+          <h1 id="title">总览</h1>
+          <div id="subtitle" class="sub">查看当前局势。</div>
+        </div>
+        <div class="row">
+          <button id="refreshBtn">刷新</button>
+          <button id="logoutBtn">退出</button>
+        </div>
+      </div>
+
+      <section id="overview" class="panel active">
+        <div class="grid cols3">
+          <div class="card"><div class="sub">当前天数</div><div id="day" class="metric">-</div><div id="phase" class="sub">-</div></div>
+          <div class="card"><div class="sub">玩家数量</div><div id="playerCount" class="metric">-</div><div class="sub">含 DM</div></div>
+          <div class="card"><div class="sub">当前 Session</div><div id="session" style="font-weight:800;margin-top:10px">-</div></div>
+        </div>
+        <div class="grid cols2" style="margin-top:14px">
+          <div class="card"><h2>最近玩家</h2><div id="playerPreview" class="stack"></div></div>
+          <div class="card"><h2>系统日志</h2><div id="appDebug" class="debug">后台已打开。</div></div>
+        </div>
+      </section>
+
+      <section id="players" class="panel">
+        <div class="card">
+          <h2>玩家</h2>
+          <div class="table-wrap"><table><thead><tr><th>名字</th><th>阵营</th><th>职业</th><th>资源</th></tr></thead><tbody id="playersTable"></tbody></table></div>
+        </div>
+      </section>
+
+      <section id="actions" class="panel">
+        <div class="card stack">
+          <div class="row">
+            <select id="actionPlayer"></select>
+            <button id="loadActionsBtn">读取行动</button>
+          </div>
+          <div class="table-wrap"><table><thead><tr><th>天数</th><th>类型</th><th>内容</th><th>反馈</th><th>状态</th></tr></thead><tbody id="actionsTable"></tbody></table></div>
+        </div>
+      </section>
+
+      <section id="factions" class="panel">
+        <div id="factionCards" class="grid cols2"></div>
+      </section>
+
+      <section id="storage" class="panel">
+        <div class="card"><h2>仓库</h2><div id="warehouseList" class="stack"></div></div>
+      </section>
+
+      <section id="manage" class="panel">
+        <div class="grid cols2">
+          <div class="card stack">
+            <h2>创建玩家</h2>
+            <label>名字<input id="newPlayerName" placeholder="玩家名" /></label>
+            <label>
+              阵营
+              <select id="newPlayerFaction">
+                <option value="冒险者">冒险者</option>
+                <option value="统治者">统治者</option>
+                <option value="反抗者">反抗者</option>
+                <option value="天灾使者">天灾使者</option>
+              </select>
+            </label>
+            <label>职业<input id="newPlayerJob" placeholder="职业" /></label>
+            <button id="createPlayerBtn" class="primary">创建玩家</button>
+          </div>
+          <div class="card">
+            <h2>玩家管理</h2>
+            <div id="managePlayers" class="stack"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </section>
+
+  <script>
+    const VERSION = "v20260526-6";
+    const tabs = [
+      ["overview", "总览", "查看当前局势。"],
+      ["players", "玩家", "查看玩家资源与职业。"],
+      ["actions", "行动", "查看行动与反馈。"],
+      ["factions", "阵营", "查看方舟、避难所、里程碑、天灾。"],
+      ["storage", "仓库", "查看公共仓库。"],
+      ["manage", "管理", "创建玩家、发放物资、删除玩家。"]
+    ];
+    const state = { user: null, players: [], game: null, session: null, active: "overview", itemCatalog: null };
+    const $ = (id) => document.getElementById(id);
+    const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[c]));
+
+    function log(id, message) {
+      const box = $(id);
+      if (!box) return;
+      const time = new Date().toLocaleTimeString();
+      box.textContent = `${time}  ${message}\n${box.textContent || ""}`.slice(0, 5000);
+    }
+
+    function showLoginError(message) {
+      $("loginError").textContent = message;
+      $("loginError").classList.add("show");
+      log("loginDebug", "错误：" + message);
+    }
+
+    async function api(path, options = {}) {
+      const headers = { "Content-Type": "application/json", "Accept": "application/json", "X-User-Role": "dm", ...(options.headers || {}) };
+      if (state.user?.token) headers.Authorization = `Bearer ${state.user.token}`;
+      const res = await fetch(`/api${path}`, { ...options, headers, cache: "no-store", credentials: "include" });
+      const text = await res.text();
+      let data = null;
+      try { data = text ? JSON.parse(text) : null; }
+      catch { throw new Error(`API 返回的不是 JSON：${text.slice(0, 200)}`); }
+      if (res.status === 401) {
+        localStorage.removeItem("snowfall_dm_user");
+        state.user = null;
+      }
+      if (!res.ok) throw new Error(data?.detail || data?.message || `HTTP ${res.status}`);
+      return data;
+    }
+
+    async function login() {
+      const btn = $("loginBtn");
+      const username = $("username").value.trim();
+      const password = $("password").value;
+      $("loginError").classList.remove("show");
+      btn.disabled = true;
+      btn.textContent = "正在登录";
+      log("loginDebug", `页面版本 ${VERSION}`);
+      log("loginDebug", "请求 POST /api/auth/login");
+      try {
+        const data = await api("/auth/login", { method: "POST", body: JSON.stringify({ username, password }) });
+        state.user = {
+          username,
+          token: data.token || data.access_token || "",
+          id: data.userId || data.playerId || data.id,
+          name: data.playerName || data.name || username,
+          role: data.role || "dm"
+        };
+        localStorage.setItem("snowfall_dm_user", JSON.stringify(state.user));
+        log("loginDebug", `登录成功：${state.user.name}`);
+        openApp();
+      } catch (err) {
+        showLoginError(`登录失败：${err.message || err}`);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "进入后台";
+      }
+    }
+
+    function openApp() {
+      $("loginView").hidden = true;
+      $("loginView").style.display = "none";
+      $("appView").hidden = false;
+      $("appView").style.display = "grid";
+      $("operator").textContent = `${state.user.name || state.user.username} · ${state.user.role || "dm"}`;
+      renderNav();
+      refreshAll();
+    }
+
+    function renderNav() {
+      $("nav").innerHTML = tabs.map(([id, name]) => `<button data-tab="${id}" class="${state.active === id ? "active" : ""}">${name}</button>`).join("");
+      $("mobileNav").innerHTML = tabs.map(([id, name]) => `<button data-tab="${id}" class="${state.active === id ? "primary" : ""}">${name}</button>`).join("");
+      document.querySelectorAll("[data-tab]").forEach((btn) => btn.onclick = () => switchTab(btn.dataset.tab));
+    }
+
+    function switchTab(id) {
+      state.active = id;
+      tabs.forEach(([tabId, name, sub]) => {
+        $(tabId).classList.toggle("active", tabId === id);
+        if (tabId === id) { $("title").textContent = name; $("subtitle").textContent = sub; }
+      });
+      renderNav();
+      if (id === "players") renderPlayers();
+      if (id === "actions") loadActions();
+      if (id === "factions") loadFactions();
+      if (id === "storage") loadStorage();
+      if (id === "manage") renderManage();
+    }
+
+    function list(value) {
+      if (Array.isArray(value)) return value;
+      if (Array.isArray(value?.items)) return value.items;
+      if (Array.isArray(value?.entries)) return value.entries;
+      if (Array.isArray(value?.data)) return value.data;
+      if (Array.isArray(value?.actions)) return value.actions;
+      if (Array.isArray(value?.stock)) return value.stock;
+      if (value && typeof value === "object") {
+        return Object.entries(value)
+          .filter(([key]) => !["success", "message", "detail"].includes(key))
+          .map(([key, item]) => typeof item === "object" && item !== null ? { id: key, key, ...item } : { id: key, key, name: key, quantity: item });
+      }
+      return [];
+    }
+
+    function itemId(item) {
+      return item.itemId ?? item.item_id ?? item.id ?? item.value;
+    }
+
+    function itemType(item) {
+      return item.itemType ?? item.item_type ?? item.type ?? item.category ?? "resource";
+    }
+
+    function itemName(item) {
+      return item.name ?? item.itemName ?? item.item_name ?? item.label ?? `物品 ${itemId(item)}`;
+    }
+
+    async function getItemCatalog() {
+      if (state.itemCatalog) return state.itemCatalog;
+      const data = await api("/dm/item-catalog?userRole=dm");
+      state.itemCatalog = list(data).filter((item) => Number.isFinite(Number(itemId(item))));
+      return state.itemCatalog;
+    }
+
+    async function refreshAll() {
+      try {
+        log("appDebug", "刷新总览");
+        $("playerPreview").innerHTML = `<div class="sub">加载中...</div>`;
+        const [game, players] = await Promise.all([
+          api("/game-state"),
+          api("/players")
+        ]);
+        state.game = game;
+        state.session = game?.sessionId || game?.session_id || null;
+        state.players = list(players);
+        $("day").textContent = game.day ?? game.current_day ?? game.currentDay ?? "-";
+        $("phase").textContent = "阶段：" + (game.phase || game.current_phase || game.currentPhase || "未知");
+        $("playerCount").textContent = state.players.length;
+        $("session").textContent = state.session || "默认局";
+        $("playerPreview").innerHTML = state.players.slice(0, 6).map(playerCard).join("") || `<div class="sub">暂无玩家。</div>`;
+        renderSelectors();
+        if (state.active === "players") renderPlayers();
+        if (state.active === "factions") loadFactions();
+        if (state.active === "storage") loadStorage();
+        if (state.active === "manage") renderManage();
+      } catch (err) {
+        log("appDebug", "刷新失败：" + (err.message || err));
+        if (!state.user) {
+          $("appView").hidden = true;
+          $("loginView").hidden = false;
+          $("loginView").style.display = "grid";
+        }
+      }
+    }
+
+    function playerName(p) { return p.name || p.playerName || p.nickname || p.username || p.realName || p.displayName || `玩家 ${p.id ?? p.playerId ?? p.userId ?? ""}`; }
+    function playerFaction(p) { return p.faction || p.factionName || p.camp || p.campName || p.roleFaction || "未设置阵营"; }
+    function playerJob(p) { return p.job || p.jobName || p.profession || p.professionName || p.occupation || p.role || "未设置职业"; }
+    function playerCard(p) {
+      return `<div class="card"><b>${esc(playerName(p))}</b><div class="sub small">${esc(playerFaction(p))} · ${esc(playerJob(p))}</div></div>`;
+    }
+    function renderSelectors() {
+      const html = state.players.map(p => `<option value="${p.id ?? p.playerId ?? p.userId}">${esc(playerName(p))}</option>`).join("");
+      $("actionPlayer").innerHTML = html || `<option value="">暂无玩家</option>`;
+    }
+    async function renderPlayers() {
+      $("playersTable").innerHTML = `<tr><td colspan="4" class="sub">加载中...</td></tr>`;
+      const rows = await Promise.all(state.players.map(async (p) => {
+        const id = p.id ?? p.playerId ?? p.userId;
+        const res = await api(`/players/${id}/resources`).catch(() => ({}));
+        return `<tr><td>${esc(playerName(p))}</td><td><span class="pill">${esc(playerFaction(p))}</span></td><td>${esc(playerJob(p))}</td><td>食物 ${res.food ?? res.foodUnits ?? 0} / 燃料 ${res.fuel ?? res.fuelKg ?? 0} / 材料 ${res.materials ?? res.material ?? 0}</td></tr>`;
+      }));
+      $("playersTable").innerHTML = rows.join("") || `<tr><td colspan="4" class="sub">暂无玩家。</td></tr>`;
+    }
+    async function loadActions() {
+      const id = $("actionPlayer").value;
+      if (!id) return;
+      $("actionsTable").innerHTML = `<tr><td colspan="5" class="sub">加载中...</td></tr>`;
+      const [day, faction, night] = await Promise.all([
+        api(`/actions/player/${id}`).catch(() => []),
+        api(`/faction-actions/player/${id}`).catch(() => []),
+        api(`/night-actions/all?playerId=${id}`).catch(() => [])
+      ]);
+      const rows = [...list(day), ...list(faction), ...list(night)].map(a => {
+        const actionId = a.id ?? a.actionId ?? a.action_id;
+        const type = a.type || a.action_type || a.actionType || "行动";
+        const dayNo = a.day ?? a.currentDay ?? a.gameDay ?? "-";
+        const status = a.status || "pending";
+        const approve = actionId ? `<button data-approve="${esc(actionId)}">通过</button>` : "";
+        return `<tr><td>${dayNo}</td><td><span class="pill">${esc(type)}</span></td><td>${esc(a.content || a.description || "-")}</td><td>${esc(a.feedback || "等待主持人反馈")}</td><td><span class="pill ${status === "resolved" ? "ok" : "warn"}">${esc(status)}</span> ${approve}</td></tr>`;
+      });
+      $("actionsTable").innerHTML = rows.join("") || `<tr><td colspan="5" class="sub">暂无行动。</td></tr>`;
+      document.querySelectorAll("[data-approve]").forEach(btn => btn.onclick = () => approveAction(btn.dataset.approve));
+    }
+
+    async function approveAction(actionId) {
+      try {
+        await api(`/actions/${actionId}/approve`, { method: "POST", body: JSON.stringify({ feedback: "审批通过", failed: false }) })
+          .catch(() => api(`/actions/${actionId}/feedback`, { method: "POST", body: JSON.stringify({ feedback: "审批通过", failed: false }) }));
+        log("appDebug", `行动 ${actionId} 已通过`);
+        loadActions();
+      } catch (err) {
+        log("appDebug", `审批失败：${err.message || err}`);
+      }
+    }
+    async function loadFactions() {
+      $("factionCards").innerHTML = `<div class="card sub">加载中...</div>`;
+      const entries = await Promise.all([
+        ["方舟", api("/ark/status").catch(e => ({ error: e.message }))],
+        ["避难所", api("/shelter").catch(e => ({ error: e.message }))],
+        ["里程碑", api(`/milestones/progress?userRole=dm&playerId=${state.user.id}`).catch(e => ({ error: e.message }))],
+        ["天灾", api("/catastrophe/progress").catch(e => ({ error: e.message }))]
+      ].map(async ([name, promise]) => [name, await promise]));
+      $("factionCards").innerHTML = entries.map(([name, data]) => factionCard(name, data)).join("");
+    }
+
+    function meter(label, value, total) {
+      if (value === undefined || value === null || value === "") return `<div><span class="pill">${esc(label)}</span> -</div>`;
+      const current = Number(value);
+      const target = Number(total ?? 0);
+      const shown = Number.isFinite(current) ? current : esc(value);
+      return `<div><span class="pill">${esc(label)}</span> ${shown}${Number.isFinite(target) && target ? ` / ${target}` : ""}</div>`;
+    }
+
+    function factionCard(name, data) {
+      if (data?.error) return `<div class="card"><h2>${name}</h2><div class="sub">${esc(data.error)}</div></div>`;
+      if (name === "方舟") {
+        return `<div class="card"><h2>方舟</h2>
+          <div class="metric">${data.completionPercentage ?? data.progress ?? 0}%</div>
+          ${meter("木板", data.currentWood ?? data.wood, data.targetWood)}
+          ${meter("金属", data.currentMetal ?? data.metal, data.targetMetal)}
+          ${meter("密封胶", data.currentSealant ?? data.sealant, data.targetSealant)}
+        </div>`;
+      }
+      if (name === "避难所") {
+        return `<div class="card"><h2>避难所</h2>
+          <div class="metric">${data.completionPercentage ?? data.progress ?? 0}%</div>
+          ${meter("存活人数", data.survivors ?? data.population ?? data.people)}
+          ${meter("劳动力", data.labor ?? data.workers ?? data.workerCount)}
+          ${meter("食物库存", data.food ?? data.foodStock)}
+          ${meter("燃料", data.fuel ?? data.fuelStock)}
+        </div>`;
+      }
+      if (name === "里程碑") {
+        return `<div class="card"><h2>反抗里程碑</h2>
+          <div class="metric">${data.completionPercentage ?? data.progress ?? 0}%</div>
+          ${meter("已完成", data.completed ?? data.finished ?? data.done)}
+          ${meter("总数", data.total ?? data.totalMilestones)}
+        </div>`;
+      }
+      return `<div class="card"><h2>天灾</h2>
+        <div class="metric">${data.progress ?? data.completionPercentage ?? 0}%</div>
+        ${meter("当前阶段", data.phase ?? data.stage ?? data.status)}
+        ${meter("灾难次数", data.disasterCount ?? data.catastropheCount ?? data.count)}
+        <div class="sub small">${esc(data.status || data.description || "")}</div>
+      </div>`;
+    }
+    async function loadStorage() {
+      $("warehouseList").innerHTML = `<div class="sub">加载中...</div>`;
+      const warehouses = list(await api("/warehouses?userRole=dm").catch(() => []));
+      const cards = await Promise.all(warehouses.map(async (w) => {
+        const key = w.warehouseKey || w.warehouse_key || w.key || w.id;
+        const stockData = await api(`/warehouses/${key}/stock?userRole=dm`).catch(() => ({}));
+        const stock = list(stockData?.items || stockData?.entries || stockData?.stock || stockData);
+        return `<div class="card"><h3>${esc(w.name || key)}</h3>${stock.map(i => `<span class="pill">${esc(i.name || i.itemId || i.item_id || i.id)} x ${i.quantity ?? i.qty ?? 0}</span>`).join("") || `<div class="sub small">暂无库存。</div>`}</div>`;
+      }));
+      $("warehouseList").innerHTML = cards.join("") || `<div class="sub">暂无仓库。</div>`;
+    }
+
+    function renderManage() {
+      $("managePlayers").innerHTML = state.players.map((p) => {
+        const id = p.id ?? p.playerId ?? p.userId;
+        return `<div class="card">
+          <b>${esc(playerName(p))}</b>
+          <div class="sub small">${esc(playerFaction(p))} · ${esc(playerJob(p))}</div>
+          <div class="row" style="margin-top:8px">
+            <button data-grant="${esc(id)}">发放物资</button>
+            <button data-delete-player="${esc(id)}">删除玩家</button>
+          </div>
+        </div>`;
+      }).join("") || `<div class="sub">暂无玩家。</div>`;
+      document.querySelectorAll("[data-grant]").forEach(btn => btn.onclick = () => grantItem(btn.dataset.grant));
+      document.querySelectorAll("[data-delete-player]").forEach(btn => btn.onclick = () => deletePlayer(btn.dataset.deletePlayer));
+    }
+
+    async function createPlayer() {
+      const name = $("newPlayerName").value.trim();
+      const faction = $("newPlayerFaction").value;
+      const job = $("newPlayerJob").value.trim();
+      if (!name) return log("appDebug", "创建失败：请输入名字");
+      try {
+        await api("/dm/players?userRole=dm", {
+          method: "POST",
+          body: JSON.stringify({ name, username: name, faction, job })
+        });
+        $("newPlayerName").value = "";
+        $("newPlayerJob").value = "";
+        log("appDebug", `已创建玩家：${name}`);
+        refreshAll();
+      } catch (err) {
+        log("appDebug", `创建玩家失败：${err.message || err}`);
+      }
+    }
+
+    async function grantItem(playerId) {
+      try {
+        const catalog = await getItemCatalog();
+        if (!catalog.length) {
+          throw new Error("物品目录为空，无法发放物资");
+        }
+        const preview = catalog
+          .slice(0, 80)
+          .map((item, index) => `${index + 1}. ${itemName(item)} [${itemType(item)} #${itemId(item)}]`)
+          .join("\n");
+        const choice = prompt(`输入要发放的物品序号：\n\n${preview}`, "1");
+        if (!choice) return;
+        const item = catalog[Number(choice) - 1];
+        if (!item) throw new Error("物品序号无效");
+        const quantity = Number(prompt("数量？", "1") || "1");
+        if (!Number.isFinite(quantity) || quantity <= 0) throw new Error("数量必须大于 0");
+        await api(`/dm/players/${playerId}/inventory?userRole=dm`, {
+          method: "PUT",
+          body: JSON.stringify({ itemType: itemType(item), itemId: Number(itemId(item)), quantity })
+        });
+        log("appDebug", `已给玩家 ${playerId} 发放 ${itemName(item)} x ${quantity}`);
+      } catch (err) {
+        log("appDebug", `发放物资失败：${err.message || err}`);
+      }
+    }
+
+    async function deletePlayer(playerId) {
+      if (!confirm("确定删除这个玩家？")) return;
+      try {
+        await api(`/dm/players/${playerId}?userRole=dm`, { method: "DELETE" });
+        log("appDebug", `已删除玩家 ${playerId}`);
+        refreshAll();
+      } catch (err) {
+        log("appDebug", `删除玩家失败：${err.message || err}`);
+      }
+    }
+
+    $("loginBtn").onclick = login;
+    $("refreshBtn").onclick = refreshAll;
+    $("loadActionsBtn").onclick = loadActions;
+    $("createPlayerBtn").onclick = createPlayer;
+    $("logoutBtn").onclick = () => { localStorage.removeItem("snowfall_dm_user"); location.reload(); };
+    ["username", "password"].forEach(id => $(id).addEventListener("keydown", e => { if (e.key === "Enter") login(); }));
+    window.addEventListener("error", e => showLoginError("页面错误：" + e.message));
+    log("loginDebug", `完整后台已加载 ${VERSION}`);
+
+    function autoLogin() {
+      try {
+        const user = JSON.parse(localStorage.getItem("snowfall_dm_user") || "null");
+        if (user?.token) {
+          state.user = user;
+          openApp();
+        }
+      } catch {
+        localStorage.removeItem("snowfall_dm_user");
+      }
+    }
+
+    autoLogin();
+  </script>
+</body>
+</html>
